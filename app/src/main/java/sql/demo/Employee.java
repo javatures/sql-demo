@@ -65,4 +65,10 @@ public class Employee {
         this.department = department;
     }
 
+    @Override
+    public String toString() {
+        return "Employee [department=" + department + ", email=" + email + ", fname=" + fname + ", id=" + id
+                + ", salary=" + salary + ", surname=" + surname + "]";
+    }
+
 }

@@ -2,7 +2,9 @@ package sql.demo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class EmployeeDao implements Dao<Employee> {
@@ -30,8 +32,25 @@ public class EmployeeDao implements Dao<Employee> {
 
     @Override
     public List<Employee> getAll() {
-        // TODO Auto-generated method stub
-        return null;
+        List<Employee> list = new ArrayList<>();
+        try {
+            PreparedStatement pStatement = connection.prepareStatement("select eid, dept_id, fname, surname, email, salary, dname from employees inner join departments on departments.did=employees.dept_id");
+            ResultSet rSet = pStatement.executeQuery();
+            while (rSet.next()) {
+                Employee temp = new Employee(
+                    rSet.getInt("eid"), 
+                    new Department(rSet.getInt("dept_id"), rSet.getString("dname")), 
+                    rSet.getString("fname"), 
+                    rSet.getString("surname"), 
+                    rSet.getString("email"), 
+                    rSet.getDouble("salary"));
+                list.add(temp);
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return list;
     }
 
     @Override

@@ -6,10 +6,18 @@ package sql.demo;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.LogManager;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.Logger;
 
 public class App {
 
     public static void main(String[] args) {
+        Logger log = org.apache.logging.log4j.LogManager.getLogger(App.class.getName());
         String url = "jdbc:postgresql://localhost:5432/sqldemo";
         String username = "sqldemo";
         String password = "p4ssw0rd";
@@ -17,15 +25,23 @@ public class App {
         try {
             Connection connection = DriverManager.getConnection(url, username, password);
             EmployeeDao eDao = new EmployeeDao(connection);
-            DepartmentDao dDao = new DepartmentDao(connection);
             
-            Department department = new Department(0, "HR");
-            dDao.insert(department);
-            Employee bob = new Employee(0, department, "Bob", "Johnson", "bob.johnson@compay.com", 50000.00);
-            eDao.insert(bob);
+            List<Employee> list = eDao.getAll();
+            list.forEach(str -> System.out.println(str));
+            System.out.println();
+            Optional<Employee> match = list.stream().filter(e -> e.getFname().equals("Sam")).findFirst();
+            if (match.isPresent())
+                System.out.println(match.get());
+
+            Comparator<Employee> groupByComparator = Comparator.comparing(Employee::getFname).thenComparing(Employee::getSurname);
+            List<Employee> result = list.stream()
+                .filter(e -> e.getFname().equalsIgnoreCase("Tim") || e.getSurname().equalsIgnoreCase("Tim"))
+                .sorted(groupByComparator)
+                .collect(Collectors.toList());
+            result.forEach(System.out::println);
+
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 }
